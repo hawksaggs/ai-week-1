@@ -1,11 +1,16 @@
+# @baseUrl = http://localhost:3000
+@baseUrl = https://ai-week-1.onrender.com
 
-GET http://localhost:3000/health
+
+GET {{baseUrl}}/health
 
 ###
 
-POST http://localhost:3000/ask
+POST {{baseUrl}}/ask
 content-type: application/json
 
 {
     "question": "Explain the Node.js event loop in 100 words"
 }
+
+###

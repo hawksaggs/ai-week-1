@@ -1,29 +1,166 @@
-# AI Week 1 — Node.js AI Application Fundamentals
+# AI Week 1 — Node.js AI Application Engineering
 
-A hands-on Node.js and TypeScript project for learning how to build AI-powered backend applications with Express.js, Groq, and `openai/gpt-oss-20b`.
+A seven-day hands-on project for learning how to build reliable AI-powered backend applications with Node.js and TypeScript.
 
-The project focuses on understanding how an LLM fits into a real backend application: model calls, prompts, token usage, HTTP APIs, validation, testing, error handling, and deployment.
+This repository evolves throughout the week rather than creating a separate project for every day. Each day adds a new capability to the same application, while daily notes in `docs/` capture the concepts learned along the way.
 
-This is part of a broader learning journey from **Node.js Backend Engineer → AI Application Engineer**.
+The project starts with direct LLM integration using Groq and `openai/gpt-oss-20b`, then progresses through prompt engineering, structured outputs, reliability, streaming, evaluation, and a complete AI-powered support-ticket workflow.
+
+This repository is part of my journey from **Node.js Backend Engineer → AI Application Engineer**.
 
 ---
 
-## Goals
+## Week 1 Goals
 
-The goal of Week 1 is to build a strong foundation before introducing higher-level AI frameworks.
+By the end of Week 1, the project should demonstrate:
 
-By completing this project, you should understand:
+- Direct LLM integration from Node.js
+- Prompt and context design
+- Structured AI responses
+- Runtime validation with Zod
+- Express.js API design
+- AI service separation
+- Error handling and reliability
+- Streaming responses
+- Conversation/context management
+- AI behavior testing
+- API testing
+- Real model integration testing
+- Evaluation and regression testing
+- Production-oriented AI backend architecture
+- Deployment of an AI-powered API
 
-- How a Node.js application calls an LLM
-- What models, prompts, tokens, and context windows are
-- The difference between deterministic backend logic and probabilistic AI output
-- How to expose an LLM through an Express API
-- How to inspect token usage
-- How to test AI behavior
-- How to test Express endpoints
-- How to separate API tests from real AI integration tests
-- How to handle environment variables and API keys safely
-- How to prepare an AI backend for deployment
+---
+
+## Week 1 Roadmap
+
+```text
+Day 1
+LLM Fundamentals
++ Groq
++ Express
++ Testing
++ Deployment
+        ↓
+Day 2
+Prompt Engineering
+        ↓
+Day 3
+Structured Outputs + Zod
+        ↓
+Day 4
+Reliability + Error Handling + Retries
+        ↓
+Day 5
+Streaming + Context
+        ↓
+Day 6
+AI Support Ticket Analyzer
+        ↓
+Day 7
+Evaluation + Refactoring
+```
+
+### Day 1 — LLM Fundamentals
+
+Topics:
+
+- What an LLM is
+- Deterministic vs probabilistic systems
+- Models
+- Prompts
+- System vs user messages
+- Tokens
+- Context windows
+- Reasoning effort
+- Groq SDK integration
+- `openai/gpt-oss-20b`
+- Express.js API
+- Vitest
+- Supertest
+- AI behavior tests
+- Mocked API tests
+- Real Groq integration tests
+- Deployment
+
+Detailed notes: `docs/day-1.md`
+
+### Day 2 — Prompt Engineering
+
+Topics:
+
+- System instructions
+- User input
+- Context
+- Constraints
+- Decision rules
+- Few-shot examples
+- Prompt structure
+- Prompt injection basics
+- Prompt versioning
+
+### Day 3 — Structured Outputs
+
+Topics:
+
+- Free-form text vs typed responses
+- JSON Schema
+- Structured Outputs
+- Zod
+- Runtime validation
+- Type-safe AI responses
+
+### Day 4 — Reliability
+
+Topics:
+
+- External API failures
+- Rate limits
+- Timeouts
+- Retries
+- Backoff
+- Error classification
+- Graceful failure
+- Logging
+
+### Day 5 — Streaming and Context
+
+Topics:
+
+- Streaming responses
+- Server-sent events
+- Conversation state
+- Context construction
+- Token limits
+- Context management
+
+### Day 6 — AI Support Ticket Analyzer
+
+Build a complete application that combines the concepts learned during the week.
+
+Expected capabilities:
+
+- Ticket classification
+- Priority detection
+- Summary generation
+- Human-escalation decision
+- Suggested action
+- Structured responses
+- Validation
+- API endpoints
+- Error handling
+- Tests
+
+### Day 7 — Evaluation and Refactoring
+
+Topics:
+
+- AI evaluation datasets
+- Behavioral assertions
+- Regression testing
+- Prompt comparison
+- Architecture cleanup
+- Production readiness review
 
 ---
 
@@ -34,59 +171,105 @@ By completing this project, you should understand:
 - Express.js
 - Groq SDK
 - `openai/gpt-oss-20b`
+- Zod
 - Vitest
 - Supertest
 - dotenv
 
+Additional tools may be introduced during the week only when the problem being solved requires them.
+
 ---
 
 ## Project Structure
+
+The same application evolves throughout the entire week.
 
 ```text
 ai-week-1/
 ├── src/
 │   ├── ai.ts
 │   ├── app.ts
-│   └── server.ts
-│
+│   ├── server.ts
+│   ├── prompts/
+│   │   └── ...
+│   └── schemas/
+│       └── ...
 ├── tests/
 │   ├── app.test.ts
-│   ├── ai.test.ts
+│   ├── ai.integration.test.ts
 │   └── setup.ts
-│
+├── docs/
+│   ├── day-1.md
+│   ├── day-2.md
+│   ├── day-3.md
+│   ├── day-4.md
+│   ├── day-5.md
+│   ├── day-6.md
+│   └── day-7.md
 ├── .env
+├── .env.example
 ├── .gitignore
 ├── package.json
 ├── tsconfig.json
-└── vitest.config.ts
+├── vitest.config.ts
+└── README.md
 ```
 
-### Responsibilities
+The source code is not duplicated into separate day folders. Git history shows how the application evolved, while `docs/day-X.md` shows what was learned each day.
+
+---
+
+## Architecture
 
 ```text
-server.ts
-└── starts the HTTP server
-
-app.ts
-├── Express configuration
-├── middleware
-├── routes
-├── validation
-└── error handling
-
-ai.ts
-├── Groq client
-├── model configuration
-├── prompts/messages
-├── reasoning settings
-└── model response handling
+Client
+  │
+  ▼
+Express API
+  │
+  ▼
+Input validation
+  │
+  ▼
+AI service
+  │
+  ▼
+Groq SDK
+  │
+  ▼
+openai/gpt-oss-20b
+  │
+  ▼
+Generated response
+  │
+  ▼
+Express API
+  │
+  ▼
+Client
 ```
+
+As the week progresses, this architecture will gain structured output, validation, reliability, streaming, and evaluation capabilities.
+
+---
+
+## Responsibilities
+
+### `server.ts`
+
+Starts the HTTP server.
+
+### `app.ts`
+
+Handles Express setup, middleware, routes, request validation, status codes, and error handling.
+
+### `ai.ts`
+
+Handles the Groq client, model configuration, messages, reasoning settings, and model response parsing.
 
 ---
 
 ## Prerequisites
-
-Make sure you have:
 
 - Node.js 18+
 - npm
@@ -96,16 +279,9 @@ Make sure you have:
 
 ## Installation
 
-Clone the repository:
-
 ```bash
-git clone <your-repository-url>
+git clone https://github.com/hawksaggs/ai-week-1.git
 cd ai-week-1
-```
-
-Install dependencies:
-
-```bash
 npm install
 ```
 
@@ -113,84 +289,29 @@ npm install
 
 ## Environment Variables
 
-Create a `.env` file in the project root:
+Create a `.env` file:
 
 ```env
 GROQ_API_KEY=your_groq_api_key
 ```
 
-Do not commit your `.env` file.
+Keep a safe template in `.env.example`:
 
-Your `.gitignore` should contain:
-
-```text
-node_modules
-.env
+```env
+GROQ_API_KEY=
 ```
 
----
-
-## AI Service
-
-The project uses Groq with:
-
-```text
-openai/gpt-oss-20b
-```
-
-Example AI service:
-
-```ts
-import Groq from "groq-sdk";
-
-function getGroqClient() {
-  const apiKey = process.env.GROQ_API_KEY;
-
-  if (!apiKey) {
-    throw new Error(
-      "GROQ_API_KEY environment variable is required",
-    );
-  }
-
-  return new Groq({
-    apiKey,
-  });
-}
-
-export async function ask(input: string) {
-  const groq = getGroqClient();
-
-  const response = await groq.chat.completions.create({
-    model: "openai/gpt-oss-20b",
-
-    messages: [
-      {
-        role: "user",
-        content: input,
-      },
-    ],
-
-    reasoning_effort: "low",
-  });
-
-  return {
-    content: response.choices[0]?.message?.content ?? "",
-    usage: response.usage,
-  };
-}
-```
+Never commit `.env` or real API keys.
 
 ---
 
 ## Running the Application
 
-Start the development server:
-
 ```bash
 npm run dev
 ```
 
-The server runs locally at:
+Local API:
 
 ```text
 http://localhost:3000
@@ -206,8 +327,6 @@ http://localhost:3000
 GET /health
 ```
 
-Example:
-
 ```bash
 curl http://localhost:3000/health
 ```
@@ -220,23 +339,19 @@ Response:
 }
 ```
 
----
-
 ### Ask the AI
 
 ```http
 POST /ask
 ```
 
-Request body:
+Request:
 
 ```json
 {
   "question": "Explain the Node.js event loop in 100 words"
 }
 ```
-
-Example:
 
 ```bash
 curl -X POST http://localhost:3000/ask \
@@ -261,138 +376,65 @@ Example response:
 
 ---
 
-## Request Flow
+## Current AI Model
+
+The project currently uses:
 
 ```text
-Client
-  │
-  │ POST /ask
-  ▼
-Express
-  │
-  ▼
-Input validation
-  │
-  ▼
-ask()
-  │
-  ▼
-Groq API
-  │
-  ▼
 openai/gpt-oss-20b
-  │
-  ▼
-Generated response
-  │
-  ▼
-Express
-  │
-  ▼
-JSON response
 ```
+
+through the Groq SDK.
 
 ---
 
 ## Testing
 
-The project uses:
-
-- Vitest as the test runner
-- Supertest for Express endpoint testing
-
-Run all tests:
+The project uses Vitest and Supertest.
 
 ```bash
 npm test
 ```
 
-Run tests in watch mode:
+Watch mode:
 
 ```bash
 npm run test:watch
 ```
 
-For verbose test output:
+Verbose output:
 
 ```bash
 npx vitest run --reporter=verbose
 ```
 
----
+### Express API Tests
 
-## API Tests vs AI Tests
+`tests/app.test.ts` should mock the AI service and test routes, status codes, validation, response formatting, error handling, and whether `ask()` is called correctly.
 
-A useful distinction in AI applications is separating deterministic API tests from real model integration tests.
+These tests should stay fast and deterministic.
 
-### Express API tests
+### AI Integration Tests
 
-These should ideally be:
+`tests/ai.integration.test.ts` calls Groq for real and verifies model connectivity, non-empty responses, approximate prompt requirements, required concepts, and token usage.
 
-- Fast
-- Deterministic
-- Independent of Groq availability
-- Independent of API quota
-
-Typical cases:
-
-```text
-GET /health
-POST /ask with missing question
-POST /ask with empty question
-POST /ask with invalid input
-```
-
-These tests should eventually mock the `ask()` service.
-
-### AI integration tests
-
-These call Groq for real.
-
-They verify things such as:
-
-- The model returns non-empty text
-- Prompt constraints are followed approximately
-- Required concepts appear in the response
-- Token usage is returned
-
-Because LLM outputs can vary, avoid testing exact text.
-
-Avoid:
-
-```ts
-expect(result.content).toBe(
-  "Node.js is a JavaScript runtime..."
-);
-```
-
-Prefer behavioral assertions:
-
-```ts
-expect(result.content.length).toBeGreaterThan(0);
-```
-
-or:
-
-```ts
-expect(result.content.toLowerCase()).toContain("i/o");
-```
+These tests are naturally slower, network-dependent, variable, and quota-consuming.
 
 ---
 
 ## AI Testing Mindset
 
-Traditional backend testing often looks like:
+Traditional backend testing:
 
 ```text
 input
   ↓
 deterministic function
   ↓
-exact expected output
+exact output
 ```
 
-LLM testing is different:
+AI evaluation:
 
 ```text
 prompt
@@ -401,218 +443,175 @@ model
   ↓
 variable output
   ↓
-does the result satisfy the requirement?
+does it satisfy the requirement?
 ```
 
-This is the beginning of AI evaluation, which will become more important later in the learning roadmap.
+Prefer behavioral checks over exact-string comparisons.
 
 ---
 
-## Key Concepts Learned
+## Key Engineering Principle
 
-### LLM
+> Use the model for intelligence. Use deterministic backend code for guarantees.
 
-A Large Language Model processes context and generates output based on learned patterns.
+The model can help with language understanding, classification, summarization, generation, and reasoning.
 
-### Tokens
+Node.js should continue to own authentication, authorization, validation, business rules, database operations, security, permissions, financial checks, HTTP behavior, and application state.
 
-Models process text as tokens rather than simple words.
-
-Tokens affect:
-
-```text
-context limits
-latency
-cost
-```
-
-### Context Window
-
-The context window represents the amount of information available to the model during a request.
-
-It can include:
-
-```text
-system instructions
-user input
-conversation history
-retrieved documents
-tool results
-generated content
-```
-
-### Probabilistic Output
-
-Traditional backend logic is usually deterministic:
-
-```text
-input
-  ↓
-code
-  ↓
-predictable result
-```
-
-LLMs are generative:
-
-```text
-input
-  ↓
-model
-  ↓
-potentially variable result
-```
-
-### Application Responsibility
-
-A core principle for this project:
-
-> Use the model for intelligence and natural-language reasoning. Use deterministic backend code for guarantees.
-
-Critical operations such as authorization, validation, financial checks, permissions, and business rules should remain inside application code.
-
----
-
-## Example Prompt Experiments
-
-Try sending variations of the same request:
-
-```text
-Explain Node.js.
-```
-
-```text
-Explain Node.js to a frontend React developer
-who has never built a backend.
-```
-
-```text
-Explain Node.js in exactly three bullet points.
-```
-
-```text
-Explain the Node.js event loop
-to an experienced backend engineer.
-
-Focus on I/O performance.
-```
-
-Observe how audience, constraints, context, and formatting instructions change model behavior.
-
----
-
-## npm Scripts
-
-Example `package.json` scripts:
-
-```json
-{
-  "scripts": {
-    "dev": "tsx watch src/server.ts",
-    "start": "tsx src/server.ts",
-    "test": "vitest run",
-    "test:watch": "vitest"
-  }
-}
-```
+The LLM is a component of the backend, not the backend itself.
 
 ---
 
 ## Deployment
 
-The project can be deployed as a Node.js web service on Render.
+The application is deployed on Render:
 
-The server should listen on the environment-provided port:
-
-```ts
-const PORT = Number(process.env.PORT) || 3000;
-
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(`Server running on port ${PORT}`);
-});
+```text
+https://ai-week-1.onrender.com
 ```
 
-For deployment:
+Health check:
 
-1. Push the project to GitHub.
-2. Create a new Web Service on Render.
-3. Connect the GitHub repository.
-4. Configure the build/start commands.
-5. Add `GROQ_API_KEY` as an environment variable.
-6. Deploy the service.
-7. Verify `/health`.
-8. Test `/ask` against the deployed URL.
+```bash
+curl https://ai-week-1.onrender.com/health
+```
 
-Never commit the Groq API key to GitHub.
+AI request:
+
+```bash
+curl -X POST https://ai-week-1.onrender.com/ask \
+  -H "Content-Type: application/json" \
+  -d '{
+    "question": "Explain Node.js in one sentence"
+  }'
+```
+
+The server should listen on the environment-provided port and bind to `0.0.0.0`.
 
 ---
 
-## Day 1 Completion Checklist
+## Git Checkpoints
+
+Use Git tags to preserve the exact state after each day.
+
+```bash
+git tag day-1-complete
+git push origin day-1-complete
+```
+
+Later:
+
+```bash
+git tag day-2-complete
+git push origin day-2-complete
+```
+
+---
+
+## Daily Notes
 
 ```text
-✅ Groq SDK integration
-✅ openai/gpt-oss-20b model
-✅ Environment variable configuration
-✅ Basic model calls
-✅ Prompt experiments
-✅ Token usage inspection
-✅ Express.js API
+docs/
+├── day-1.md
+├── day-2.md
+├── day-3.md
+├── day-4.md
+├── day-5.md
+├── day-6.md
+└── day-7.md
+```
+
+Each document can capture concepts learned, architecture decisions, code patterns, testing lessons, problems encountered, and a completion checklist.
+
+---
+
+## Day 1 Status
+
+```text
+✅ LLM fundamentals
+✅ Deterministic vs probabilistic behavior
+✅ Models
+✅ Prompts
+✅ System vs user messages
+✅ Tokens
+✅ Context windows
+✅ Reasoning effort
+✅ Groq SDK
+✅ openai/gpt-oss-20b
+✅ Environment variables
+✅ Express API
 ✅ GET /health
 ✅ POST /ask
-✅ Request validation
+✅ Input validation
 ✅ Error handling
+✅ app.ts / server.ts separation
 ✅ Vitest
 ✅ Supertest
-✅ Express API tests
-✅ AI behavior tests
-
-⬜ Mock AI calls in normal API tests
-⬜ Keep separate real Groq integration tests
-⬜ Deploy to Render
+✅ API tests
+✅ Mocked AI layer
+✅ Real Groq integration tests
+✅ GitHub repository
+✅ Render deployment
 ```
 
 ---
 
-## Roadmap
-
-After completing Day 1, the next topics are:
+## Concepts Intentionally Deferred
 
 ```text
-Day 2
-Prompt Engineering
-      ↓
-Day 3
-Structured Outputs + Zod
-      ↓
-Tool Calling
-      ↓
-Embeddings
-      ↓
-RAG
-      ↓
+LangChain
+LangGraph
 Agents
-      ↓
 MCP
-      ↓
-Evals + Observability
-      ↓
-Production AI Applications
+RAG
+Embeddings
+Vector databases
+Fine-tuning
+Multi-agent systems
+```
+
+The goal is to understand the primitives before introducing frameworks.
+
+---
+
+## End-of-Week Target
+
+```text
+HTTP API
+   ↓
+validated input
+   ↓
+well-designed prompts
+   ↓
+structured AI output
+   ↓
+runtime validation
+   ↓
+reliability controls
+   ↓
+streaming/context management
+   ↓
+AI evaluation
+   ↓
+tested application
+   ↓
+deployed service
 ```
 
 ---
 
 ## Guiding Principle
 
-The purpose of this repository is not simply to learn how to call an LLM API.
+AI application engineering is not simply calling an LLM API.
 
-The goal is to learn how to build reliable software around a probabilistic model:
+The goal is to surround a probabilistic model with enough deterministic engineering that the overall application behaves reliably.
 
 ```text
 input
   ↓
-LLM
+model
   ↓
-uncertain output
+probabilistic output
   ↓
 validation
   ↓
@@ -623,4 +622,4 @@ testing / evaluation
 reliable application behavior
 ```
 
-AI application engineering is the practice of combining model intelligence with strong backend engineering.
+That is the focus of this Week 1 project.
