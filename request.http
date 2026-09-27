@@ -1,0 +1,11 @@
+
+GET http://localhost:3000/health
+
+###
+
+POST http://localhost:3000/ask
+content-type: application/json
+
+{
+    "question": "Explain the Node.js event loop in 100 words"
+}
