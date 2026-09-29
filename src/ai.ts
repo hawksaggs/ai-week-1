@@ -1,10 +1,17 @@
 import Groq from "groq-sdk";
+import { CLASSIFY_TICKET_PROMPT } from "./prompts/classify-ticket.prompt.js";
 
-const groq = new Groq({
-  apiKey: process.env.GROQ_API_KEY,
-});
+function getGroqClient() {
+  const apiKey = process.env.GROQ_API_KEY;
+  if (!apiKey) throw new Error("GROQ_API_KEY is required");
+
+  return new Groq({
+    apiKey,
+  });
+}
 
 export async function ask(input: string) {
+  const groq = getGroqClient();
   const response = await groq.chat.completions.create({
     model: "openai/gpt-oss-20b",
     reasoning_effort: "low",
@@ -39,4 +46,25 @@ export async function ask(input: string) {
     content: response.choices[0]?.message?.content ?? "",
     usage: response.usage,
   };
+}
+
+export async function classifyTicket(message: string) {
+  const groq = getGroqClient();
+
+  const response = await groq.chat.completions.create({
+    model: "openai/gpt-oss-20b",
+    reasoning_effort: "low",
+    messages: [
+      {
+        role: "system",
+        content: CLASSIFY_TICKET_PROMPT,
+      },
+      {
+        role: "user",
+        content: message,
+      },
+    ],
+  });
+
+  return response.choices[0]?.message?.content?.trim().toLowerCase() ?? "";
 }
