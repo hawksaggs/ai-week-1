@@ -1,5 +1,5 @@
-# @baseUrl = http://localhost:3000
-@baseUrl = https://ai-week-1.onrender.com
+@baseUrl = http://localhost:3000
+# @baseUrl = https://ai-week-1.onrender.com
 
 
 GET {{baseUrl}}/health
@@ -14,3 +14,31 @@ content-type: application/json
 }
 
 ###
+
+POST {{baseUrl}}/tickets/classify
+content-type: application/json
+
+{
+    "message": "I was charged twice."
+}
+###
+POST {{baseUrl}}/tickets/classify
+content-type: application/json
+
+{
+    "message": "My subscription isn't working."
+}
+###
+POST {{baseUrl}}/tickets/classify
+content-type: application/json
+
+{
+    "message": "My payment succeeded, but now the application won't open."
+}
+###
+POST {{baseUrl}}/tickets/classify
+content-type: application/json
+
+{
+    "message": "unable to access account, not able to reset password, charged twice, abc"
+}

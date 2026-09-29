@@ -5,6 +5,7 @@ import express, {
 } from "express";
 
 import { ask } from "./ai";
+import { classifyTicket } from "./ai.js";
 
 export const app = express();
 
@@ -38,6 +39,29 @@ app.post("/ask", async (req: Request, res: Response, next: NextFunction) => {
   }
 });
 
+app.post(
+  "/tickets/classify",
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { message } = req.body;
+
+      if (typeof message !== "string" || message.trim().length === 0) {
+        return res.status(400).json({
+          error: "message is required",
+        });
+      }
+
+      const ticketCategory = await classifyTicket(message);
+
+      return res.json({
+        category: ticketCategory,
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+);
+
 // Error handler
 app.use((error: Error, _req: Request, res: Response, _next: NextFunction) => {
   console.error(error);
@@ -46,4 +70,3 @@ app.use((error: Error, _req: Request, res: Response, _next: NextFunction) => {
     error: "Failed to generate response",
   });
 });
-
