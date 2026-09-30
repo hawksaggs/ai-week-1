@@ -51,11 +51,9 @@ app.post(
         });
       }
 
-      const ticketCategory = await classifyTicket(message);
+      const result = await classifyTicket(message);
 
-      return res.json({
-        category: ticketCategory,
-      });
+      return res.json(result);
     } catch (error) {
       next(error);
     }

@@ -1,5 +1,9 @@
 import Groq from "groq-sdk";
 import { CLASSIFY_TICKET_PROMPT } from "./prompts/classify-ticket.prompt.js";
+import {
+  TicketClassificationJsonSchema,
+  TicketClassificationSchema,
+} from "./schemas/ticket.schema.js";
 
 function getGroqClient() {
   const apiKey = process.env.GROQ_API_KEY;
@@ -64,7 +68,20 @@ export async function classifyTicket(message: string) {
         content: message,
       },
     ],
+    response_format: {
+      type: "json_schema",
+      json_schema: {
+        name: "ticket_classification",
+        strict: true,
+        schema: TicketClassificationJsonSchema,
+      },
+    },
   });
 
-  return response.choices[0]?.message?.content?.trim().toLowerCase() ?? "";
+  const content = response.choices[0]?.message?.content;
+  if(!content) throw new Error('Model returned empty response')
+
+  const json = JSON.parse(content);
+
+  return TicketClassificationSchema.parse(json);
 }

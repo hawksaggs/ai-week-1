@@ -73,12 +73,16 @@ Customer:
 Category:
 general
 
-OUTPUT
+OUTPUT REQUIREMENTS
 
-Return exactly one of:
+Classify the ticket according to the rules above.
 
-billing
-technical
-account
-general
+For confidence:
+- use a number between 0 and 1
+- higher means the classification is clearer
+- lower means the input is ambiguous
+
+For reason:
+- briefly explain why the selected category applies
+- base the explanation only on the customer message
 `;
