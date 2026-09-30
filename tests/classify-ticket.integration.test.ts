@@ -15,7 +15,15 @@ function runCases(cases: TicketCase[]) {
     async ({ message, expected }) => {
       const result = await classifyTicket(message);
 
-      expect(result).toBe(expected);
+      expect(result.category).toBe(expected);
+
+      expect(result.confidence).toBeGreaterThanOrEqual(0);
+
+      expect(result.confidence).toBeLessThanOrEqual(1);
+
+      expect(result.reason).toEqual(expect.any(String));
+
+      expect(result.reason.length).toBeGreaterThan(0);
     },
     15_000,
   );
