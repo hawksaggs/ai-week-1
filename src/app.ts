@@ -6,6 +6,7 @@ import express, {
 
 import { ask } from "./ai";
 import { classifyTicket } from "./ai.js";
+import { AIError } from "./ai.error.js";
 
 export const app = express();
 
@@ -64,7 +65,30 @@ app.post(
 app.use((error: Error, _req: Request, res: Response, _next: NextFunction) => {
   console.error(error);
 
-  res.status(500).json({
-    error: "Failed to generate response",
+  if (error instanceof AIError) {
+    switch (error.code) {
+      case "AI_TIMEOUT":
+        return res.status(504).json({
+          error: error.message,
+        });
+
+      case "AI_RATE_LIMIT":
+        return res.status(503).json({
+          error: error.message,
+        });
+
+      case "AI_UNAVAILABLE":
+        return res.status(503).json({
+          error: error.message,
+        });
+
+      case "AI_UNKNOWN":
+        return res.status(500).json({
+          error: error.message,
+        });
+    }
+  }
+  return res.status(500).json({
+    error: "Internal server error",
   });
 });

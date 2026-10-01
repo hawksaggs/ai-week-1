@@ -1,9 +1,11 @@
 import Groq from "groq-sdk";
 import { CLASSIFY_TICKET_PROMPT } from "./prompts/classify-ticket.prompt.js";
 import {
+  TicketClassification,
   TicketClassificationJsonSchema,
   TicketClassificationSchema,
 } from "./schemas/ticket.schema.js";
+import { translateGroqError } from "./ai.error.js";
 
 function getGroqClient() {
   const apiKey = process.env.GROQ_API_KEY;
@@ -11,6 +13,10 @@ function getGroqClient() {
 
   return new Groq({
     apiKey,
+    // max no of attempt for retrying request after sending 1st request
+    maxRetries: 2,
+    // number of seconds to wait for api response before cancelling the request
+    timeout: 10_000,
   });
 }
 
@@ -52,34 +58,60 @@ export async function ask(input: string) {
   };
 }
 
-export async function classifyTicket(message: string) {
+export async function classifyTicket(
+  message: string,
+): Promise<TicketClassification> {
   const groq = getGroqClient();
 
-  const response = await groq.chat.completions.create({
-    model: "openai/gpt-oss-20b",
-    reasoning_effort: "low",
-    messages: [
-      {
-        role: "system",
-        content: CLASSIFY_TICKET_PROMPT,
+  const startTime = Date.now();
+  let response;
+  try {
+    response = await groq.chat.completions.create({
+      model: "openai/gpt-oss-20b",
+      reasoning_effort: "low",
+      messages: [
+        {
+          role: "system",
+          content: CLASSIFY_TICKET_PROMPT,
+        },
+        {
+          role: "user",
+          content: message,
+        },
+      ],
+      response_format: {
+        type: "json_schema",
+        json_schema: {
+          name: "ticket_classification",
+          strict: true,
+          schema: TicketClassificationJsonSchema,
+        },
       },
-      {
-        role: "user",
-        content: message,
-      },
-    ],
-    response_format: {
-      type: "json_schema",
-      json_schema: {
-        name: "ticket_classification",
-        strict: true,
-        schema: TicketClassificationJsonSchema,
-      },
-    },
-  });
+    });
+
+    const durationMs = Date.now() - startTime;
+
+    console.log("AI request succeeded", {
+      operation: "classify_ticket",
+      provider: "groq",
+      durationMs,
+    });
+  } catch (error) {
+    const durationMs = Date.now() - startTime;
+
+    const aiError = translateGroqError(error);
+
+    console.log("AI request failed", {
+      operation: "classify_ticket",
+      provider: "groq",
+      durationMs,
+      errorCode: aiError.code,
+    });
+    throw aiError;
+  }
 
   const content = response.choices[0]?.message?.content;
-  if(!content) throw new Error('Model returned empty response')
+  if (!content) throw new Error("Model returned empty response");
 
   const json = JSON.parse(content);
 
