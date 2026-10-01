@@ -2,12 +2,16 @@ import request from "supertest";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { app } from "../src/app";
 import { ask } from "../src/ai";
+import { classifyTicket } from "../src/ai.js";
+import { AIError } from "../src/ai.error.js";
 
 vi.mock(import("../src/ai"), () => ({
   ask: vi.fn(),
+  classifyTicket: vi.fn(),
 }));
 
 const mockedAsk = vi.mocked(ask);
+const mockedClassifyTicket = vi.mocked(classifyTicket);
 
 describe("GET /health", () => {
   it("return status ok", async () => {
@@ -64,7 +68,7 @@ describe("POST /ask", () => {
         total_tokens: 18,
       },
     } as Awaited<ReturnType<typeof ask>>);
-    
+
     const response = await request(app).post("/ask").send({
       question: "Explain Node.js",
     });
@@ -93,7 +97,60 @@ describe("POST /ask", () => {
     expect(response.status).toBe(500);
 
     expect(response.body).toEqual({
-      error: "Failed to generate response",
+      error: "Internal server error",
+    });
+  });
+});
+
+describe("POST /tickets/classify", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("return 504 when AI timed out", async () => {
+    mockedClassifyTicket.mockRejectedValue(
+      new AIError("AI_TIMEOUT", "AI service timed out"),
+    );
+
+    const response = await request(app).post("/tickets/classify").send({
+      message: "I was charged twice",
+    });
+
+    expect(response.status).toBe(504);
+    expect(response.body).toEqual({
+      error: "AI service timed out",
+    });
+  });
+
+  it("returns 503 when AI is rate limited", async () => {
+    mockedClassifyTicket.mockRejectedValue(
+      new AIError("AI_RATE_LIMIT", "AI service rate limit exceeded"),
+    );
+
+    const response = await request(app).post("/tickets/classify").send({
+      message: "I was charged twice",
+    });
+
+    expect(response.status).toBe(503);
+
+    expect(response.body).toEqual({
+      error: "AI service rate limit exceeded",
+    });
+  });
+
+  it("returns 503 when AI service is unavailable", async () => {
+    mockedClassifyTicket.mockRejectedValue(
+      new AIError("AI_UNAVAILABLE", "AI service is temporarily unavailable"),
+    );
+
+    const response = await request(app).post("/tickets/classify").send({
+      message: "I was charged twice",
+    });
+
+    expect(response.status).toBe(503);
+
+    expect(response.body).toEqual({
+      error: "AI service is temporarily unavailable",
     });
   });
 });

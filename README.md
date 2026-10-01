@@ -15,8 +15,8 @@ This project is part of my journey from **Node.js Backend Engineer → AI Applic
 | Day 1 | LLM fundamentals, Groq, Express, testing, deployment | ✅ Complete |
 | Day 2 | Prompt engineering and ticket classification | ✅ Complete |
 | Day 3 | Structured Outputs + Zod | ✅ Complete |
-| Day 4 | Reliability, retries, timeouts, error handling | ⏭️ Next |
-| Day 5 | Streaming and context management | ⬜ |
+| Day 4 | Reliability, retries, timeouts, error handling | ✅ Complete |
+| Day 5 | Streaming and context management | ⏭️ Next |
 | Day 6 | AI Support Ticket Analyzer | ⬜ |
 | Day 7 | Evaluation and refactoring | ⬜ |
 
@@ -44,6 +44,8 @@ ai-week-1/
 │   ├── ai.ts
 │   ├── app.ts
 │   ├── server.ts
+│   ├── errors/
+│   │   └── ai.error.ts
 │   ├── prompts/
 │   │   └── classify-ticket.prompt.ts
 │   └── schemas/
@@ -88,15 +90,8 @@ Covered:
 - Context windows
 - Reasoning effort
 - Groq SDK integration
-- `openai/gpt-oss-20b`
 - Express API
-- `GET /health`
-- `POST /ask`
-- Validation and error handling
-- `app.ts` / `server.ts` / `ai.ts` separation
-- Vitest
-- Supertest
-- Mocked API tests
+- Vitest + Supertest
 - Real Groq integration tests
 - Render deployment
 
@@ -105,8 +100,6 @@ Detailed notes: `docs/day-1.md`
 ---
 
 # Day 2 — Prompt Engineering
-
-Day 2 evolved the app into a support-ticket classifier.
 
 Covered:
 
@@ -119,10 +112,8 @@ Covered:
 - Few-shot examples
 - Ambiguous inputs
 - Prompt injection
-- Prompt organization
 - Evaluation-style datasets
 - Parameterized integration tests
-- Diagnosing prompt failures as specification failures
 
 Detailed notes: `docs/day-2.md`
 
@@ -130,137 +121,9 @@ Detailed notes: `docs/day-2.md`
 
 # Day 3 — Structured Outputs + Zod
 
-Day 3 moved the classifier from a loose string contract to a schema-constrained, typed application response.
+Day 3 moved the classifier from a loose string response to a schema-constrained, typed application contract.
 
-The core shift:
-
-```text
-prompt
-  ↓
-JSON Schema
-  ↓
-model
-  ↓
-structured JSON
-  ↓
-Zod validation
-  ↓
-typed TypeScript object
-```
-
-The main principle is:
-
-> Use prompts to define meaning, JSON Schema to constrain model output, and Zod to validate what the application accepts.
-
-Detailed notes: `docs/day-3.md`
-
----
-
-## Structured Ticket Classification
-
-The classifier now returns:
-
-```json
-{
-  "category": "billing",
-  "confidence": 0.94,
-  "reason": "The customer reports a duplicate charge."
-}
-```
-
-The application works with a typed object derived from Zod.
-
----
-
-## Day 3 Testing
-
-The full suite is green:
-
-```text
-Test Files  4 passed (4)
-Tests      31 passed (31)
-```
-
-Coverage includes:
-
-- Zod schema validation
-- Express API tests
-- Generic AI integration tests
-- Clear classifier cases
-- Boundary cases
-- Messy user input
-- Prompt-injection cases
-- Ambiguous cases
-
-The `Groq unavailable` message printed by `app.test.ts` is expected because that test intentionally verifies the `500` failure path.
-
----
-
-## Day 3 Completion Checklist
-
-```text
-✅ Zod ticket schema exists
-✅ TicketClassification type uses z.infer
-✅ equivalent JSON Schema exists
-✅ response_format uses json_schema
-✅ strict mode enabled
-✅ every schema field is required
-✅ additionalProperties: false
-✅ classifyTicket() returns TicketClassification
-✅ raw model content is parsed
-✅ parsed result is validated with Zod
-✅ /tickets/classify returns structured JSON
-✅ schema unit tests exist
-✅ classifier integration tests use result.category
-✅ confidence tested between 0 and 1
-✅ reason tested as non-empty
-✅ full test suite passes
-```
-
----
-
-## Git Workflow
-
-Day 3 branch:
-
-```text
-day-3-structured-outputs
-```
-
-Recommended commit:
-
-```bash
-git add .
-git commit -m "feat: complete structured ticket classification with Zod"
-git push origin day-3-structured-outputs
-```
-
-After merge:
-
-```bash
-git tag day-3-complete
-git push origin day-3-complete
-```
-
----
-
-## Next: Day 4
-
-Day 4 focuses on reliability around external AI calls:
-
-```text
-timeouts
-rate limits
-retries
-backoff
-error classification
-graceful degradation
-logging
-```
-
----
-
-## Guiding Mental Model
+Core mental model:
 
 ```text
 Prompt
@@ -275,3 +138,255 @@ Zod
 TypeScript
 → what the rest of the code can safely USE
 ```
+
+Final Day 3 test result:
+
+```text
+Test Files  4 passed (4)
+Tests      31 passed (31)
+```
+
+Detailed notes: `docs/day-3.md`
+
+---
+
+# Day 4 — Reliability
+
+Day 4 focused on making the AI integration resilient when the provider is slow, rate limited, temporarily unavailable, or fails.
+
+The main reliability flow is:
+
+```text
+Express
+   ↓
+AI service
+   ↓
+Groq
+   │
+   ├── success
+   ├── timeout
+   ├── rate limit
+   ├── provider failure
+   └── network failure
+```
+
+Detailed notes: `docs/day-4.md`
+
+---
+
+## Timeout and Retry Configuration
+
+The Groq client uses an explicit timeout and retry policy:
+
+```ts
+return new Groq({
+  apiKey,
+  timeout: 10_000,
+  maxRetries: 2,
+});
+```
+
+Meaning:
+
+```text
+timeout
+→ do not wait forever for one request attempt
+
+maxRetries
+→ retry temporary failures up to 2 extra times
+```
+
+---
+
+## Backoff
+
+Retries should not happen aggressively.
+
+Conceptually:
+
+```text
+attempt
+   ↓ fail
+
+wait
+   ↓
+
+retry
+```
+
+The SDK handles retry backoff for supported temporary failures.
+
+---
+
+## Error Classification
+
+Provider-specific errors are translated into application-specific errors.
+
+```text
+Groq timeout
+      ↓
+AI_TIMEOUT
+
+Groq rate limit
+      ↓
+AI_RATE_LIMIT
+
+Groq/provider failure
+      ↓
+AI_UNAVAILABLE
+```
+
+This keeps Groq-specific details inside the AI layer.
+
+---
+
+## HTTP Error Mapping
+
+The Express error middleware turns AI errors into a stable API contract:
+
+```text
+AI_TIMEOUT
+→ 504 Gateway Timeout
+
+AI_RATE_LIMIT
+→ 503 Service Unavailable
+
+AI_UNAVAILABLE
+→ 503 Service Unavailable
+```
+
+Clients do not need to know which AI provider is being used.
+
+---
+
+## Reliability Tests
+
+New deterministic API tests verify:
+
+```text
+✅ AI timeout → 504
+✅ AI rate limit → 503
+✅ AI unavailable → 503
+```
+
+The final Day 4 test result is:
+
+```text
+Test Files  4 passed (4)
+Tests      34 passed (34)
+```
+
+---
+
+## Request Duration Logging
+
+Classifier calls now record how long Groq requests take.
+
+Final structured log format:
+
+```ts
+console.log("AI request succeeded", {
+  operation: "classify_ticket",
+  provider: "groq",
+  durationMs,
+});
+```
+
+Useful log fields include:
+
+```text
+operation
+provider
+durationMs
+success/failure
+application error code
+```
+
+Avoid logging secrets, API keys, authorization headers, passwords, or sensitive customer content.
+
+---
+
+## Day 4 Completion Checklist
+
+```text
+✅ Groq timeout configured
+✅ Groq retries configured
+✅ backoff concept understood
+✅ retryable vs non-retryable failures understood
+✅ application-level AI errors added
+✅ timeout handling added
+✅ rate-limit handling added
+✅ provider-unavailable handling added
+✅ HTTP error mapping added
+✅ reliability tests added
+✅ request-duration logging added
+✅ operation log renamed to classify_ticket
+✅ duration field renamed to durationMs
+✅ full test suite passes: 34/34
+```
+
+Day 4 is complete.
+
+---
+
+## Day 4 Mental Model
+
+```text
+timeout
+→ do not wait forever
+
+retry
+→ temporary failure may succeed next time
+
+backoff
+→ wait between retries
+
+error classification
+→ translate provider failures into app failures
+
+HTTP mapping
+→ give clients a stable contract
+
+logging
+→ understand what happened in production
+```
+
+---
+
+## Git Workflow
+
+Day 4 branch:
+
+```text
+day-4-reliability
+```
+
+Recommended commit:
+
+```bash
+git add .
+git commit -m "feat: complete AI reliability and error handling"
+git push origin day-4-reliability
+```
+
+After merge:
+
+```bash
+git tag day-4-complete
+git push origin day-4-complete
+```
+
+---
+
+## Next: Day 5
+
+Day 5 will focus on:
+
+```text
+streaming
+conversation context
+message history
+context-window thinking
+```
+
+The learning style will stay incremental: first understand the problem, then add one small implementation concept at a time.
